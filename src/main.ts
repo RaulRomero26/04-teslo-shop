@@ -15,7 +15,13 @@ async function bootstrap() {
     })
    );
 
-  await app.listen(process.env.PORT);
-  logger.log(`Server running on port ${process.env.PORT}`);
+  app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    next();
+  });
+
+
+  await app.listen(process.env.PORT || 3000);
+  console.log(`Server running on port ${process.env.PORT}`);
 }
 bootstrap();
