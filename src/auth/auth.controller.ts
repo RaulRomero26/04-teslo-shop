@@ -1,6 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -13,9 +14,18 @@ export class AuthController {
 
   @Post('login')//comentaroo
   loginUser(@Body() loginUserDto: LoginUserDto) {
-    console.log('Login endpoint hit'); // Agrega este console.log
-    console.log('Request body:', loginUserDto); // Agrega este console.log
+    console.log('Login endpoint hit');
+    console.log('Request body:', loginUserDto); 
     return  this.authService.login(loginUserDto);
+  }
+
+  @Get('private')
+  @UseGuards(AuthGuard())
+  testigPrivateRoute() {
+    return{
+      ok: true,
+      message: 'Hola mundo private'
+    }
   }
 
 
