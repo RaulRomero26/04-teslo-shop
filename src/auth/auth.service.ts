@@ -5,13 +5,16 @@ import { User } from './entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto, LoginUserDto } from './dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService
   ) {}
   
   async create(createUserDto: CreateUserDto) {
@@ -25,7 +28,10 @@ export class AuthService {
       await this.userRepository.save(user);
       delete user.password;
 
-      return user;
+      return {
+        ...user,
+        token: this.getJwtToken({email: user.email})
+      }
 
     } catch (error) {
       this.handleDBError(error);
@@ -33,28 +39,41 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto) {
-
     try {
-      const {password, email} = loginUserDto;
+      console.log('SE LLAMO AL LOGIN');
+      const { password, email } = loginUserDto;
 
       const user = await this.userRepository.findOne({
         where: { email },
         select: { email: true, password: true }
-      })
+      });
 
-      if(!user) {
+      if (!user) {
         throw new UnauthorizedException('Invalid credentials (email)');
       }
+
       const isPasswordValid = bcrypt.compareSync(password, user.password);
-      if(!isPasswordValid) {
+      if (!isPasswordValid) {
         throw new BadRequestException('Invalid credentials (password)');
       }
-      //TODO return JWT token
-      return user;
+
+      // TODO: return JWT token
+      return {
+        ...user,
+        token: this.getJwtToken({ email: user.email })
+      };
     } catch (error) {
       this.handleDBError(error);
     }
   }
+
+  //Es mas bien para generar el token
+  private getJwtToken( payload: JwtPayload){
+
+    const token = this.jwtService.sign(payload);
+    return token;
+  }
+
 
   private handleDBError(error: any): never {
     if(error.code === '23505') {
