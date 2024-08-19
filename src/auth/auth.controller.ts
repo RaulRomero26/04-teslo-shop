@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './entities/user.entity';
-import { GetUser, RawHeaders } from './decorators';
+import { Auth, GetUser, RawHeaders } from './decorators';
 import { UserRoleGuard } from './guards/user-role/user-role.guard';
 import { RoleProtected } from './decorators/role-protected/role-protected.decorator';
 import { validRoles } from './interfaces';
@@ -54,6 +54,21 @@ export class AuthController {
       user
     }
   }
+
+  @Get('private3')
+  @Auth(validRoles.user)//se puede pasar los roles como argumentos validRoles.superUser, validRoles.admin, validRoles.user
+  privateRoute3(
+    @GetUser() user: User,
+  ){
+
+    return{
+      ok: true,
+      message: 'Hola mundo private 2',
+      user
+    }
+  }
+
+
 
 
 }
