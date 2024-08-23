@@ -9,9 +9,7 @@ export class SeedController {
 
 
   @Get()
-  @Auth(validRoles.admin
-
-  )
+  //@Auth(validRoles.admin)
   executeSeed() {
     return this.seedService.runSeed();
   }
